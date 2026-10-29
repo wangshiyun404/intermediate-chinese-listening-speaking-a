@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="renderer" content="webkit">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>会通汉语听说3 · 教学增强版</title>
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/teaching.css">
+<link rel="stylesheet" href="assets/picker.css">
+<link rel="stylesheet" href="assets/ink.css">
+<link rel="stylesheet" href="assets/scene.css">
+<link rel="icon" href="data:,">
+</head>
+<body>
+<noscript><p class="fatal">本课件需要启用 JavaScript。请用 Chrome 或 Edge 浏览器打开。</p></noscript>
+<script>
+// IE cannot run this page: say so plainly instead of showing a blank screen
+if (document.documentMode) { document.write('<style>#app,#side,#scrim,#grid,#help,#toast,#blank{display:none!important}</style><p style="margin:80px auto;max-width:560px;padding:24px;background:#fff;color:#222;font-size:18px">请用 Chrome 或 Edge 浏览器打开本课件（不支持 IE）。<br>在“打开课件.html”上点右键 → 打开方式 → 选 Chrome 或 Edge。</p>'); }
+</script>
+
+<div id="app">
+  <div id="htToolbar" aria-label="教学工具">
+    <button id="htOpenProgress" class="ht-tool ht-tool-main" title="课程安排（T）">课程安排 <span id="htCompletion">0/29</span></button>
+    <span id="htContext" class="ht-context"></span>
+    <div class="ht-tools">
+      <button id="htQuickMark" class="ht-tool ht-tool-save" title="记录当前授课位置（K）">讲到这里</button>
+      <button id="htResume" class="ht-tool" title="返回上次标记的授课页">继续上次</button>
+      <button id="htPen" class="ht-tool" title="开启画笔，在课件上圈画" aria-pressed="false" aria-controls="htInkBar">画笔</button>
+      <button id="htOpenPicker" class="ht-tool ht-tool-accent" title="随机抽问（Q）">随机抽问</button>
+    </div>
+  </div>
+  <div id="htStorageWarning" role="alert" hidden></div>
+  <div id="stageWrap">
+    <div id="stage">
+      <img id="slideImg" alt="" draggable="false">
+      <div id="overlay"></div>
+      <button class="edge prev" id="edgePrev" title="上一页（←）" aria-label="上一页"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button class="edge next" id="edgeNext" title="下一页（→）" aria-label="下一页"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div id="notes" hidden>
+    <div class="notes-head"><b>备注</b><span id="notesPage"></span><button class="x" id="notesClose" title="关闭备注（N）" aria-label="关闭备注">×</button></div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div id="bar">
+    <div class="grp left">
+      <button class="btn" id="btnMenu" title="目录（M）" aria-label="目录"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <button class="where" id="where" title="打开目录"><b id="whereNo"></b><span class="les" id="whereLesson"></span><span class="ttl" id="whereTitle"></span></button>
+    </div>
+    <div class="grp nav">
+      <button class="btn" id="btnPrev" title="上一页（←）" aria-label="上一页"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <label class="page"><input id="pageInput" type="text" inputmode="numeric" autocomplete="off" aria-label="页码"><span>/ <span id="pageTotal"></span></span></label>
+      <button class="btn" id="btnNext" title="下一页（→ 或空格）" aria-label="下一页"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="grp audio" id="audioGrp" hidden>
+      <button class="btn play" id="btnPlay" title="播放 / 暂停（P）" aria-label="播放或暂停"><svg viewBox="0 0 24 24" class="ic-play"><path d="M8 5v14l11-7z"/></svg><svg viewBox="0 0 24 24" class="ic-pause"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg></button>
+      <span class="rec" id="recLabel"></span>
+      <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="播放进度">
+      <span class="time" id="timeLabel">0:00 / 0:00</span>
+      <button class="btn txt" id="btnBack" title="后退 5 秒（[）">−5s</button>
+      <button class="btn txt" id="btnFwd" title="前进 5 秒（]）">+5s</button>
+      <button class="btn txt" id="btnRestart" title="从头播放（R）">重播</button>
+      <button class="btn txt rate" id="btnRate" title="语速：1.0× → 0.85× → 0.7×（点击切换）">1.0×</button>
+    </div>
+    <div class="grp right">
+      <button class="btn" id="btnNotes" title="备注（N）" aria-label="备注"><svg viewBox="0 0 24 24"><path d="M5 4h14v12l-4 4H5zM15 20v-4h4M8 9h8M8 13h5"/></svg></button>
+      <button class="btn" id="btnGrid" title="本课页面概览（G）" aria-label="概览"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg></button>
+      <button class="btn" id="btnFull" title="全屏（F）" aria-label="全屏"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button class="btn" id="btnHelp" title="快捷键（?）" aria-label="快捷键说明"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.6 2.6 0 115 1c0 1.8-2.5 2-2.5 4M12 17.5v.5"/><circle cx="12" cy="12" r="9"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<div id="scrim" hidden></div>
+
+<aside id="side" aria-label="目录" aria-hidden="true">
+  <div class="side-head">
+    <div class="side-title">《会通汉语听说》第三册<small>全册课件 · 12 课 · <span id="sideCount"></span> 页 · 107 段录音</small></div>
+    <button class="x" id="sideClose" title="关闭（Esc）" aria-label="关闭目录">×</button>
+  </div>
+  <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="searchInput" type="search" placeholder="搜索页面文字，如：生词、功能表达、录音064" autocomplete="off"></div>
+  <div id="sideList"></div>
+  <div id="searchList" hidden></div>
+</aside>
+
+<div id="grid" hidden>
+  <div class="grid-head"><div id="gridTabs"></div><button class="x" id="gridClose" title="关闭（G 或 Esc）" aria-label="关闭概览">×</button></div>
+  <div id="gridBody"></div>
+</div>
+
+<div id="help" hidden>
+  <div class="help-card">
+    <button class="x" id="helpClose" aria-label="关闭">×</button>
+    <h2>快捷键</h2><p>点顶部“画笔”即可用鼠标圈画；<kbd>Esc</kbd> 结束画笔；画笔开启时 <kbd>Ctrl / ⌘</kbd> + <kbd>Z</kbd> 撤销笔迹。</p><p><kbd>T</kbd> 课程安排 · <kbd>K</kbd> 讲到这里 · <kbd>Q</kbd> 随机抽问。教学面板打开时，翻页快捷键暂停生效。</p>
+    <table>
+      <tr><td><kbd>→</kbd> <kbd>↓</kbd> <kbd>空格</kbd> <kbd>PageDown</kbd></td><td>下一页</td></tr>
+      <tr><td><kbd>←</kbd> <kbd>↑</kbd> <kbd>PageUp</kbd></td><td>上一页</td></tr>
+      <tr><td>数字 + <kbd>回车</kbd></td><td>跳到指定页（如 247 回车）</td></tr>
+      <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>第一页 / 最后一页</td></tr>
+      <tr><td><kbd>Backspace</kbd></td><td>上一页；刚跳转过，则回到跳转前的那一页</td></tr>
+      <tr><td><kbd>P</kbd></td><td>播放 / 暂停本页录音</td></tr>
+      <tr><td><kbd>R</kbd></td><td>从头播放</td></tr>
+      <tr><td><kbd>[</kbd> / <kbd>]</kbd></td><td>后退 / 前进 5 秒</td></tr>
+      <tr><td><kbd>M</kbd></td><td>目录（可搜索）；<kbd>Esc</kbd> 关闭</td></tr>
+      <tr><td><kbd>G</kbd></td><td>本课页面概览</td></tr>
+      <tr><td><kbd>N</kbd></td><td>显示 / 隐藏备注</td></tr>
+      <tr><td><kbd>F</kbd> 或 <kbd>F5</kbd></td><td>全屏；<kbd>Esc</kbd> 退出</td></tr>
+      <tr><td><kbd>B</kbd> 或 <kbd>.</kbd></td><td>黑屏（录音照常播放，<kbd>P</kbd> <kbd>R</kbd> <kbd>[</kbd> <kbd>]</kbd> 仍可用）；按其他键或点一下屏幕恢复</td></tr>
+    </table>
+    <p>录音：点页面右上角的绿色播放条，或底部工具栏。同一段录音翻页不中断；翻到另一段录音的页面时自动暂停，马上翻回来会接着播。触摸屏：左右滑动或点画面两侧翻页，点一下画面可唤出工具栏。</p>
+  </div>
+</div>
+
+<div id="blank" hidden></div>
+<div id="toast" hidden></div>
+<audio id="au" preload="none"></audio>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script src="assets/teaching-data.js"></script>
+<script src="assets/teaching.js"></script>
+<script src="assets/picker.js"></script>
+<script src="assets/secure-blobs.js"></script>
+<script src="assets/ht-secure.js"></script>
+<script src="assets/ink.js"></script>
+<script src="assets/scene.js"></script>
+<script>
+// Shown when the assets folder did not come along (only the html was copied, or it was opened from inside a zip)
+if (!document.documentMode && (!window.DECK || !window.__HT_APP)) {
+  document.body.innerHTML = '<p style="margin:80px auto;max-width:600px;padding:24px;background:#fff;color:#222;border-radius:10px;font:18px/1.7 sans-serif">课件文件不完整，打不开。<br>请把整个文件夹（里面有 assets、slides、audio、thumbs 四个文件夹）放在一起，再双击“打开课件.html”。<br>如果是压缩包，请先解压，不要在压缩包里直接打开。</p>';
+}
+</script>
+</body>
+</html>

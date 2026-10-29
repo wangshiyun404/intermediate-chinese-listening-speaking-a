@@ -1,0 +1,21 @@
+第53页后：夏佳和张经理——情境动画
+
+成片：053_夏佳和张经理_情境动画.mp4
+时长：2分22.667秒；1280×720；24帧/秒；H.264视频、AAC音频。
+内容：二维人物图层动画，含说话口型、头部和手臂动作、会议邮件、加班、堵车及争取再次机会等情境。
+声音：原课件 audio/014.mp3，完整使用原录音；未另配音、未添加音乐。
+字幕：以课件第53页原文为准；识别结果仅辅助对齐时间，不作为改写原文的依据。
+人物：夏佳参照原第36页的人物介绍，保留金发、粉色上衣和白裤子；张经理为本段对话的配角示意形象。
+播放入口：重新打开“打开课件.html”，第53页向后翻一次，点击中央播放按钮。
+视频为第53页后的补充页，下一页继续原第54页。原页码、进度和笔迹沿用。
+
+制作素材采用内置图像生成工具，随后在本地制作二维图层动画并合成原录音。
+人物图与背景原图保存在：_增强版开发/情境动画_录音014/assets。
+检验：成片完整解码无错误，抽取9个时点查看画面；音轨与教材原录音的波形相关系数为0.99967。
+课件操作以本地DOM模拟验证，共34项通过；未进行浏览器实机或真实全屏复验。
+
+人物素材提示词（参考图：原第36页人物介绍）
+Use case: illustration-story. Production asset for a 2D animated Chinese listening lesson. The attached textbook character introduction page is a visual identity REFERENCE, not the edit target. Generate ONE transparent PNG character sprite sheet arranged in exactly TWO equal columns, with generous transparent gutter and padding. No text, no boxes, no shadows, no scenery. LEFT column: a full body young adult woman Xia Jia, preserving the textbook's Xia Jia identity (second character across the top): pale skin, long straight light blonde hair with side fringe, coral pink long sleeve top, slim white trousers, flat beige shoes. Friendly recognizable clean ink-and-watercolor cartoon style consistent with the reference, enlarged clear face, three-quarter face facing right, neutral attentive expression, arms naturally slightly separated from torso with relaxed hands, standing straight, all body inside left column. RIGHT column: full body middle aged Chinese office manager Zhang, original secondary character, short dark hair, clean shaven, thin rectangular glasses, charcoal navy suit, white shirt, teal necktie, dark shoes, three-quarter facing left, mildly serious expression, arms slightly separated from torso, standing straight, entire body inside right column. Both characters same ground level and similar scale, long slim textbook cartoon proportions, strong clear outlines, minimal watercolor texture, faces large enough for subsequent animation. The woman must have the same hair and outfit identity as the referenced Xia Jia. Transparent background with true alpha. Do not include any other of the textbook characters. Sheet proportions roughly square or landscape.
+
+办公室背景提示词
+Use case: illustration-story. Create a clean 16:9 hand drawn ink and subtle watercolor cartoon background plate for a Chinese language textbook animation in the same light friendly line-and-watercolor style as educational textbook characters. Modern office in daytime, NO people and NO text. Wide frontal view, spacious pale cream wall, large soft blue windows in middle background showing distant simplified city towers, low filing cabinet at far left, tall potted plant at far right. A neat wooden office desk sits toward RIGHT HALF (not center) with a dark grey open laptop, one closed blue folder, a small cup. Comfortable room, soft sage, cream, muted blue and honey wood palette. Clear large unobstructed standing areas in the foreground at left and right for compositing two full-body characters. The desk should not cover the whole bottom foreground. Simple visual depth, gentle perspective, restrained texture. White ceiling light and small round wall clock near top right. Not photorealistic, no gradients overwhelming shapes, no speech bubbles, no charts, no branding, no watermark, no lettering.

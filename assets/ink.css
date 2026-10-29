@@ -1,0 +1,18 @@
+/* Ink uses the slide's own coordinate space; controls reserve their own row. */
+#htInkLayer { position:absolute; left:0; top:0; width:100%; height:100%; z-index:4; display:block; pointer-events:none; overflow:hidden; touch-action:none; }
+#stage.ht-inking #htInkLayer { pointer-events:all; cursor:crosshair; }
+#stage.ht-inking .edge { pointer-events:none; }
+#htPen[aria-pressed="true"] { background:#873c39; border-color:#d7756e; color:#fff8f6; }
+#htInkBar { flex:0 0 auto; display:flex; align-items:center; padding:5px 16px; min-height:41px; background:#f5f0e9; color:#4f534b; border-bottom:1px solid #d8d8cd; font-size:12px; line-height:1.4; z-index:6; }
+#htInkBar[hidden] { display:none; }
+.ht-ink-hint { margin-right:18px; }
+#htInkStatus { margin-right:12px; color:#6e796b; }
+#htInkStatus.ht-ink-unsaved { color:#a1442c; font-weight:600; }
+.ht-ink-actions { display:flex; margin-left:auto; flex-shrink:0; }
+#htInkBar button { margin-left:6px; min-height:30px; padding:4px 11px; border:1px solid #c8cfc3; border-radius:6px; background:#fffefa; color:#345441; font-size:12px; white-space:nowrap; }
+#htInkBar button:hover { background:#e9eee5; }
+#htInkBar button:disabled { opacity:.4; cursor:default; }
+#htInkBar button:focus-visible { outline:2px solid #bf743e; outline-offset:2px; }
+#htInkBar #htInkDone { background:#315b45; border-color:#315b45; color:#fff; }
+@media (max-width:800px) { .ht-ink-hint { display:none; } #htInkBar { padding:5px 10px; } }
+@media (max-width:480px) { #htInkBar { flex-wrap:wrap; } #htInkStatus { width:100%; margin:0 0 4px; } .ht-ink-actions { margin-left:0; } #htInkBar button:first-child { margin-left:0; } }
