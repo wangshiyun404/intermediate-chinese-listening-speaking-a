@@ -66,6 +66,7 @@
     stage.style.left = (m + (W - w) / 2) + 'px'; stage.style.top = (m + (H - h) / 2) + 'px';
     document.documentElement.style.setProperty('--sw', w + 'px');
     if (window.HTInk && window.HTInk.layoutChanged) window.HTInk.layoutChanged();
+    if (window.HTAnswers) window.HTAnswers.layoutChanged();
   }
   window.addEventListener('resize', layout);
 
@@ -172,6 +173,7 @@
     if (window.HTTeaching && window.HTTeaching.pageChanged) window.HTTeaching.pageChanged(i);
     if (window.HTInk) window.HTInk.pageChanged(i);
     if (window.HTScene) window.HTScene.pageChanged(i);
+    if (window.HTAnswers) window.HTAnswers.pageChanged(i);
     return note;
   }
   function go(i) { i = parseInt(i, 10); if (!(i >= 1 && i <= N)) { toast('没有这一页（共 ' + N + ' 页）'); return false; } show(i); return true; }
