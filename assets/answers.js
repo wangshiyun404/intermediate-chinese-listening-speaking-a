@@ -103,7 +103,10 @@
     var panels=p.panels||[],part=panels[panelIndex]||panels[0];if(!part)return;
     sheet.innerHTML='';
     var head=el('header','ht-answer-head'),intro=el('div','ht-answer-intro');
-    intro.appendChild(el('div','ht-answer-kicker','第4课 · 去蒙古包做客 · 第 '+page+' 页'));
+    var slide=window.DECK&&window.DECK.slides[page-1];
+    var lesson=slide&&window.DECK.lessons[slide.l];
+    var lessonTitle=lesson?('第'+lesson.n+'课 · '+lesson.title):'课堂参考答案';
+    intro.appendChild(el('div','ht-answer-kicker',lessonTitle+' · 第 '+page+' 页'));
     intro.appendChild(el('h2','ht-answer-title',p.title||'本页参考答案'));
     if(p.subtitle)intro.appendChild(el('p','ht-answer-subtitle',p.subtitle));
     head.appendChild(intro);
@@ -160,7 +163,7 @@
     toggle.textContent='隐藏答案';toggle.setAttribute('aria-pressed','true');toggle.title='返回原题目（A 或 Esc）';layoutChanged();deck.wake();
   }
   function pageChanged(n){
-    close();if(n!==page){states=[];panelIndex=0;}page=n;toggle.hidden=!data();layoutChanged();
+    close();if(n!==page){states=[];panelIndex=0;cards=[];sheet.innerHTML='';}page=n;toggle.hidden=!data();layoutChanged();
   }
   toggle.onclick=function(){active?close():open();};
   // A touch that scrolls a long answer must not also swipe the deck underneath.
