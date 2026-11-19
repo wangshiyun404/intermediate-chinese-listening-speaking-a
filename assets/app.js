@@ -174,6 +174,7 @@
     if (window.HTInk) window.HTInk.pageChanged(i);
     if (window.HTScene) window.HTScene.pageChanged(i);
     if (window.HTAnswers) window.HTAnswers.pageChanged(i);
+    if (window.HTCharacters) window.HTCharacters.pageChanged(i);
     return note;
   }
   function go(i) { i = parseInt(i, 10); if (!(i >= 1 && i <= N)) { toast('没有这一页（共 ' + N + ' 页）'); return false; } show(i); return true; }

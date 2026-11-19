@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">第6课人物与对话主题</title>
+  <desc id="desc">圈出马克、夏佳、李悦、平田康太、金志英，列出五组对话的主题。</desc>
+  <g fill="none" stroke="#b94e37" stroke-width="3.5">
+    <ellipse data-character="马克" cx="232" cy="320" rx="110" ry="175"/>
+    <ellipse data-character="夏佳" cx="512" cy="320" rx="110" ry="175"/>
+    <ellipse data-character="李悦" cx="1067" cy="320" rx="110" ry="175"/>
+    <ellipse data-character="平田康太" cx="1350" cy="315" rx="155" ry="190"/>
+    <ellipse data-character="金志英" cx="652" cy="663" rx="125" ry="164"/>
+  </g>
+  <rect x="615" y="19" width="914" height="132" rx="12" fill="#fff8ef" stroke="#ead8c8"/>
+  <g font-family="Hiragino Sans GB, PingFang SC, Microsoft YaHei, sans-serif" font-size="19" fill="#593d31">
+    <text x="634" y="43">夏佳与何大华：工作劳累、活动放松与早起锻炼</text>
+    <text x="634" y="67">马克与导游：华山游览、安全和吃饭安排</text>
+    <text x="634" y="91">金志英与李悦（李老师）：参观新农村、安全和午餐</text>
+    <text x="634" y="115">马克与平田康太：熬夜、休息与锻炼</text>
+    <text x="634" y="139">马克、夏佳、金志英：重视健康，组织运动小组</text>
+  </g>
+  <text x="80" y="844" font-family="Hiragino Sans GB, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" fill="#7b665a">另有何大华、导游参与对话，王导游、张大林在情境中被提及（本页无配图）。</text>
+</svg>
