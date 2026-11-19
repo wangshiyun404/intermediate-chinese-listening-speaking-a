@@ -8,6 +8,13 @@
   var D = window.DECK;
   if (!D || !D.slides || !D.slides.length) return;   // the html shows the "files incomplete" notice
   var N = D.count, S = D.slides, L = D.lessons;
+  var order = D.pageOrder || S.map(function (_, i) { return i + 1; }), positions = {};
+  order.forEach(function (p, i) { positions[p] = i; });
+  var firstPage = order[0], lastPage = order[order.length - 1];
+  function pageLabel(p) { return S[p - 1].label || String(p); }
+  function nextPage(p) { return order[Math.min(order.length - 1, positions[p] + 1)]; }
+  function prevPage(p) { return order[Math.max(0, positions[p] - 1)]; }
+  function lessonPages(k) { return order.filter(function (p) { return S[p - 1].l === k; }); }
   var KEY = 'huitong3-teaching-deck';
   var RATES = [1, 0.85, 0.7];
 
@@ -137,7 +144,8 @@
     cur = i;
     if (digits) clearDigits();
     digitsGone = 0;
-    setImage(i); preload(i + 1); preload(i - 1); preload(i + 2);
+    setImage(i); preload(nextPage(i)); preload(prevPage(i)); preload(nextPage(nextPage(i)));
+    if (s.noAudio) { au.pause(); autoPaused = null; }
     // Landing on a page of another recording, or in another lesson, stops what is playing.
     // Paging straight back within a few seconds (a clicker that fired twice) picks it up again.
     var leaves = curRec && ((target && target !== curRec) || recLesson[curRec] !== s.l);
@@ -150,21 +158,21 @@
       } else if (Date.now() - autoPaused.at >= 8000) autoPaused = null;
     }
     buildOverlay(s);
-    $('pageInput').value = i;
+    $('pageInput').value = pageLabel(i);
     $('whereNo').textContent = l.n ? '第' + l.n + '课' : '总览';
     $('whereLesson').textContent = l.title;
     $('whereTitle').textContent = s.t;
-    $('btnPrev').disabled = $('edgePrev').disabled = i === 1;
-    $('btnNext').disabled = $('edgeNext').disabled = i === N;
-    $('notesPage').textContent = '第 ' + i + ' 页';
+    $('btnPrev').disabled = $('edgePrev').disabled = i === firstPage;
+    $('btnNext').disabled = $('edgeNext').disabled = i === lastPage;
+    $('notesPage').textContent = '第 ' + pageLabel(i) + ' 页';
     var nb = $('notesBody'); nb.textContent = s.n || '（本页没有备注）'; nb.className = s.n ? '' : 'empty'; nb.scrollTop = 0;
     if (!$('notes').hidden) layout();
-    document.title = (l.n ? '第' + l.n + '课 ' : '') + s.t + ' · ' + i + '/' + N + ' · 会通汉语听说3 教学增强版';
+    document.title = (l.n ? '第' + l.n + '课 ' : '') + s.t + ' · ' + pageLabel(i) + '/' + N + ' · 会通汉语听说3 教学增强版';
     updateAudio();
     markCurrent();
     // a jump can be undone with Backspace until the next ordinary page turn; after that Backspace is "previous page"
     if (i !== from && backTo) hideToast();   // an earlier "press Backspace to return" hint is stale now
-    if (from >= 1 && Math.abs(i - from) > 1) backTo = from; else if (i !== from) backTo = 0;
+    if (from >= 1 && Math.abs(positions[i] - positions[from]) > 1) backTo = from; else if (i !== from) backTo = 0;
     if (!quiet) {
       store('page', i);
       try { history.replaceState(null, '', '#p=' + i); } catch (e) { /* file:// in some browsers */ }
@@ -177,17 +185,22 @@
     if (window.HTCharacters) window.HTCharacters.pageChanged(i);
     return note;
   }
-  function go(i) { i = parseInt(i, 10); if (!(i >= 1 && i <= N)) { toast('没有这一页（共 ' + N + ' 页）'); return false; } show(i); return true; }
-  function next() { if (window.HTScene && window.HTScene.next(cur)) return; if (cur < N) show(cur + 1); }
-  function prev() { if (window.HTScene && window.HTScene.prev(cur)) return; if (cur > 1) show(cur - 1); }
+  function go(i) {
+    var label = String(i).trim(), special = order.filter(function (p) { return S[p - 1].label === label; });
+    i = special.length ? special[0] : parseInt(i, 10);
+    if (!(i >= 1 && i <= N)) { toast('没有这一页（共 ' + N + ' 页）'); return false; }
+    show(i); return true;
+  }
+  function next() { if (window.HTScene && window.HTScene.next(cur)) return; if (cur !== lastPage) show(nextPage(cur)); }
+  function prev() { if (window.HTScene && window.HTScene.prev(cur)) return; if (cur !== firstPage) show(prevPage(cur)); }
   function shortNote(n) { return n ? ' · ' + n.replace('（翻到了别的页面）', '') : ''; }
   function goBack() {
     var b = backTo, from = cur, note = show(b);
-    toast('已回到第 ' + b + ' 页' + shortNote(note) + (Math.abs(b - from) > 1 ? ' · 再按 Backspace 回到第 ' + from + ' 页' : ''), 5000);
+    toast('已回到第 ' + pageLabel(b) + ' 页' + shortNote(note) + (Math.abs(positions[b] - positions[from]) > 1 ? ' · 再按 Backspace 回到第 ' + pageLabel(from) + ' 页' : ''), 5000);
   }
   function farJump(i) {   // Home / End sit next to PageUp / PageDown: say how to undo a slip
     var from = cur, note = show(i);
-    if (Math.abs(i - from) > 1) toast('已到第 ' + i + ' 页' + shortNote(note) + ' · 按 Backspace 回到第 ' + from + ' 页', 5000);
+    if (Math.abs(positions[i] - positions[from]) > 1) toast('已到第 ' + pageLabel(i) + ' 页' + shortNote(note) + ' · 按 Backspace 回到第 ' + pageLabel(from) + ' 页', 5000);
   }
 
   /* ---------- audio ---------- */
@@ -230,7 +243,7 @@
   function updateAudio() {
     var s = S[cur - 1];
     // The toolbar follows the page. A page with no recording of its own keeps the lesson's loaded one.
-    barRec = recAt(cur) || (curRec && recLesson[curRec] === s.l ? curRec : 0);
+    barRec = s.noAudio ? 0 : (recAt(cur) || (curRec && recLesson[curRec] === s.l ? curRec : 0));
     var grp = $('audioGrp');
     grp.hidden = !barRec;
     var active = barRec && barRec === curRec, playing = active && !au.paused && !au.ended;
@@ -322,12 +335,12 @@
   function fillLesson(k) {
     var box = lesBoxes[k], l = L[k];
     if (box.firstChild) return;
-    for (var i = l.start; i <= l.end; i++) box.appendChild(pageItem(i));
+    lessonPages(k).forEach(function (p) { box.appendChild(pageItem(p)); });
   }
   function pageItem(i) {
     var s = S[i - 1], b = el('button', 'pg' + (s.t.indexOf('听力文本复盘') === 0 ? ' rv' : ''));
     b.setAttribute('data-p', i);
-    b.appendChild(el('span', 'n', i));
+    b.appendChild(el('span', 'n', pageLabel(i)));
     b.appendChild(el('span', 't', s.t));
     if (s.a && !s.a.cont) b.appendChild(el('span', 'a', '♪ ' + pad3(s.a.rec)));
     b.onclick = function () { go(i); closeSide(); };
@@ -385,7 +398,7 @@
     if (!hay) hay = S.map(function (s, i) {
       var r = recAt(i + 1);
       return {
-        meta: norm('第' + (i + 1) + '页｜' + lessonName(L[s.l]) + '｜' + s.t + (r ? '｜录音' + pad3(r) + '｜录音' + r : '')),
+        meta: norm('第' + pageLabel(i + 1) + '页｜' + lessonName(L[s.l]) + '｜' + s.t + (r ? '｜录音' + pad3(r) + '｜录音' + r : '')),
         body: norm(s.x)
       };
     });
@@ -409,7 +422,7 @@
   }
   function hitItem(p, text, at, len) {
     var s = S[p - 1], b = el('button', 'hit'), h1 = el('div', 'h1'), h2 = el('div', 'h2');
-    h1.appendChild(el('i', null, p));
+    h1.appendChild(el('i', null, pageLabel(p)));
     h1.appendChild(document.createTextNode(lessonName(L[s.l]) + ' · ' + s.t + (s.a ? ' · 录音 ' + pad3(s.a.rec) : '')));
     if (at < 0) h2.textContent = text.slice(0, 56) + (text.length > 56 ? '…' : '');
     else {
@@ -439,17 +452,17 @@
     for (i = 0; i < tabs.length; i++) tabs[i].className = 'tab' + (i === k ? ' on' : '');
     gridBody.innerHTML = '';
     var me = null;
-    for (i = l.start; i <= l.end; i++) {
+    lessonPages(k).forEach(function (p) {
       (function (p) {
         var b = el('button', 'th' + (p === cur ? ' cur' : '')), im = document.createElement('img');
         im.setAttribute('loading', 'lazy'); im.alt = ''; im.src = 'thumbs/' + pad3(p) + '.jpg';
-        var cap = el('div', 'cap'); cap.appendChild(el('i', null, p)); cap.appendChild(el('span', null, S[p - 1].t));
+        var cap = el('div', 'cap'); cap.appendChild(el('i', null, pageLabel(p))); cap.appendChild(el('span', null, S[p - 1].t));
         b.appendChild(im); b.appendChild(cap);
         b.onclick = function () { go(p); closeGrid(); };
         gridBody.appendChild(b);
         if (p === cur) me = b;
-      })(i);
-    }
+      })(p);
+    });
     gridBody.scrollTop = me ? Math.max(0, me.offsetTop - gridBody.offsetTop - 140) : 0;
   }
   function openGrid() { grid.hidden = false; $('btnGrid').className = 'btn on'; fillGrid(S[cur - 1].l); }
@@ -626,8 +639,8 @@
         if (panel) return; next(); break;
       case 'ArrowLeft': case 'Left': case 'ArrowUp': case 'Up': case 'PageUp':
         if (panel) return; prev(); break;
-      case 'Home': if (panel) return; farJump(1); break;
-      case 'End': if (panel) return; farJump(N); break;
+      case 'Home': if (panel) return; farJump(firstPage); break;
+      case 'End': if (panel) return; farJump(lastPage); break;
       default: return;
     }
     e.preventDefault();
@@ -661,7 +674,7 @@
   $('help').addEventListener('click', function (e) { if (e.target === $('help')) setHelp(false); });
   blank.onclick = function () { setBlank(false); };
   $('pageInput').addEventListener('focus', function () { this.select(); });
-  $('pageInput').addEventListener('blur', function () { this.value = cur; });
+  $('pageInput').addEventListener('blur', function () { this.value = pageLabel(cur); });
 
   // swipe on touch screens (classroom whiteboards); a long press must not open the browser's image menu
   var tx = 0, ty = 0, tt = 0;
@@ -682,6 +695,7 @@
 
   window.HTDeck = {
     page: function () { return cur; }, go: go, layout: layout, wake: wake,
+    next: next, prev: prev, nextPage: nextPage, pageLabel: pageLabel,
     closePanels: function () { closeSide(); closeGrid(); setHelp(false); setBlank(false); },
     toggleAudio: toggle, fullscreen: toggleFull
   };

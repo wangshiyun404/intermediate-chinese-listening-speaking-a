@@ -83,15 +83,16 @@
   function ordered() { return sessions.map(function (s) { return session(s.id); }).sort(function (a,b) { return a.date.localeCompare(b.date) || a.number - b.number; }); }
   function recommended() { var list = ordered(), d = today(); return list.filter(function (s) { return s.date >= d; })[0] || list[list.length - 1]; }
   function nextUnfinished(id) { var list = ordered(), at = list.map(function (s) { return s.id; }).indexOf(id); return list.slice(at + 1).filter(function (s) { return record(s.id).status !== 'complete'; })[0]; }
-  function description(p) { var s = window.DECK.slides[p - 1]; return '第 ' + p + ' 页 · ' + (s.l ? '第' + s.l + '课 · ' : '') + s.t; }
+  function pageLabel(p) { return Deck.pageLabel ? Deck.pageLabel(p) : p; }
+  function description(p) { var s = window.DECK.slides[p - 1]; return '第 ' + pageLabel(p) + ' 页 · ' + (s.l ? '第' + s.l + '课 · ' : '') + s.t; }
   function resume() { if (!state.bookmark) return; closePanel(); Deck.go(state.bookmark.page); toast('已回到上次标记：' + description(state.bookmark.page)); }
   function quickMark() {
     var previous = state.bookmark ? clone(state.bookmark) : null, p = Deck.page();
     if (!change(function (d) { d.bookmark = {sessionId:null, page:p, savedAt:new Date().toISOString()}; }, '记住授课页')) return;
-    toast(storageOK ? '已记住第 ' + p + ' 页，下次点“继续上次”。' : '已临时记住第 ' + p + ' 页；关闭前请导出记录。');
+    toast(storageOK ? '已记住第 ' + pageLabel(p) + ' 页，下次点“继续上次”。' : '已临时记住第 ' + pageLabel(p) + ' 页；关闭前请导出记录。');
     var undoMark = button('撤销','ht-toast-undo',function () {
       change(function (d) { d.bookmark = previous; }, '撤销记页');
-      toast(previous ? '已恢复上次标记：第 ' + previous.page + ' 页。' : '已撤销这次标记。');
+      toast(previous ? '已恢复上次标记：第 ' + pageLabel(previous.page) + ' 页。' : '已撤销这次标记。');
     },'htUndoMark'); $('htToast').appendChild(undoMark);
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { $('htToast').hidden = true; }, 8000);
   }
@@ -165,12 +166,12 @@
   function scrollSelected() { var item=list.querySelector('[data-session="'+selected+'"]'); if (item) item.scrollIntoView({block:'nearest',inline:'nearest'}); }
   function renderToolbar() {
     $('htCompletion').hidden=true;
-    $('htContext').textContent=state.bookmark ? '已记住第 '+state.bookmark.page+' 页 · '+window.DECK.slides[state.bookmark.page-1].t : '讲完点“讲到这里”，就能记住进度';
+    $('htContext').textContent=state.bookmark ? '已记住第 '+pageLabel(state.bookmark.page)+' 页 · '+window.DECK.slides[state.bookmark.page-1].t : '讲完点“讲到这里”，就能记住进度';
     $('htContext').title=state.bookmark ? description(state.bookmark.page) : '无需选择课次，直接记住当前页';
     $('htResume').disabled=!state.bookmark;
-    $('htResume').textContent=state.bookmark?'继续上次 · '+state.bookmark.page+'页':'继续上次';
+    $('htResume').textContent=state.bookmark?'继续上次 · '+pageLabel(state.bookmark.page)+'页':'继续上次';
     $('htResume').title=state.bookmark?'返回上次标记：'+description(state.bookmark.page):'尚未标记授课位置';
-    $('htQuickMark').title='记住当前第 '+Deck.page()+' 页（K）';
+    $('htQuickMark').title='记住当前第 '+pageLabel(Deck.page())+' 页（K）';
   }
   function scrollAgenda() {
     var row=agendaList.querySelector('[data-agenda="'+recommended().id+'"]');

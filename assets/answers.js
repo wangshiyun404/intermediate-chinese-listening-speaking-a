@@ -49,7 +49,8 @@
     $('htAnswerStatus').textContent='已显示 '+count+' / '+part.items.length+(next>=0?' · 下一题：'+part.items[next].no:' · 本组已完成');
     $('htAnswerUndo').disabled=!s.order.length;$('htAnswerReset').disabled=!count;
     var pending=pendingPanel();
-    $('htAnswerNext').textContent=next>=0?'下一题答案':(pending>=0?(pending>panelIndex?'下一组题目':'回到未完成组'):(page<D.end?'继续第 '+(page+1)+' 页':'本页完成 · 下一页'));
+    var following=deck.nextPage?deck.nextPage(page):page+1;
+    $('htAnswerNext').textContent=next>=0?'下一题答案':(pending>=0?(pending>panelIndex?'下一组题目':'回到未完成组'):(page<D.end?'继续第 '+(deck.pageLabel?deck.pageLabel(following):following)+' 页':'本页完成 · 下一页'));
     cards.forEach(function(c,i){
       c.card.classList.toggle('is-next',i===next);
       c.card.classList.toggle('is-revealed',!!s.shown[i]);
@@ -82,7 +83,7 @@
     i=pendingPanel();if(i>=0){switchPanel(i);return;}
     // Source page numbers stay intact. The bottom navigation remains a direct
     // way to skip to the next source page before all answers have been shown.
-    var p=page;close();deck.go(p+1);
+    var p=page;close();deck.next?deck.next():deck.go(p+1);
   }
   function undo(){
     if(!active)return;

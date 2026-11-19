@@ -92,7 +92,7 @@
 
   function updateBar() {
     var count = currentStrokes().length;
-    $('htInkStatus').textContent = '第 ' + page + ' 页 · ' + count + ' 笔' + (!storageOK ? ' · 未保存，仅本次有效' : '');
+    $('htInkStatus').textContent = '第 ' + (window.HTDeck.pageLabel ? window.HTDeck.pageLabel(page) : page) + ' 页 · ' + count + ' 笔' + (!storageOK ? ' · 未保存，仅本次有效' : '');
     $('htInkStatus').className = storageOK ? '' : 'ht-ink-unsaved';
     var hasUndo = count > 0 || history.some(function (action) { return action.page === page; });
     $('htInkUndo').disabled = !hasUndo;
