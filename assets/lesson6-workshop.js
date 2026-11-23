@@ -25,10 +25,21 @@
   var panel = document.createElement('section');
   panel.id = 'htWorkshopVideo';
   panel.hidden = true;
-  var player = document.createElement('video');
-  player.controls = true;
-  player.preload = 'none';
-  player.setAttribute('playsinline', '');
+  function makePlayer(id) {
+    var video = document.createElement('video');
+    video.id = id;
+    video.controls = true;
+    video.preload = 'none';
+    video.hidden = true;
+    video.setAttribute('playsinline', '');
+    video.addEventListener('error', function () {
+      if (activePlayback && activePlayback.player === video && video.error) playbackError(activePlayback);
+    });
+    return video;
+  }
+  // Keep the native HLS and MP4 pipelines on separate media elements.
+  var campusPlayer = makePlayer('htWorkshopCampusPlayer');
+  var stretchPlayer = makePlayer('htWorkshopStretchPlayer');
   var tools = document.createElement('div');
   tools.className = 'ht-workshop-player-tools';
   var fallback = document.createElement('a');
@@ -42,7 +53,8 @@
   message.setAttribute('role','status');
   tools.appendChild(fallback);
   tools.appendChild(close);
-  panel.appendChild(player);
+  panel.appendChild(campusPlayer);
+  panel.appendChild(stretchPlayer);
   panel.appendChild(message);
   panel.appendChild(tools);
   stage.appendChild(panel);
@@ -51,8 +63,10 @@
     if (!activePlayback) return;
     var previous = activePlayback;
     activePlayback = null;
+    var player = previous.player;
     player.pause();
     panel.hidden = true;
+    player.hidden = true;
     if (previous.stream) previous.stream.destroy();
     if (player.hasAttribute('src')) {
       player.removeAttribute('src');
@@ -68,16 +82,17 @@
     message.textContent = '视频暂时无法播放，可打开原站或返回活动重试。';
     message.hidden = false;
   }
-  function playVideo(clip, buttonId) {
+  function playVideo(clip, player, buttonId) {
     closeVideo(false);
     if (window.HTInk && window.HTInk.isEnabled()) document.getElementById('htInkDone').click();
-    var session = { buttonId: buttonId, stream: null };
+    var session = { buttonId: buttonId, player: player, stream: null };
     activePlayback = session;
     message.hidden = true;
     panel.setAttribute('aria-label', clip.title);
     player.setAttribute('aria-label', clip.title);
     fallback.textContent = '打开' + clip.publisher + '原站';
     fallback.href = clip.original;
+    player.hidden = false;
     panel.hidden = false;
     close.focus();
     deck.wake();
@@ -100,9 +115,6 @@
     });
   }
   close.onclick = function () { closeVideo(true); };
-  player.addEventListener('error', function () {
-    if (activePlayback && player.error) playbackError(activePlayback);
-  });
   panel.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') { closeVideo(true); event.preventDefault(); }
     event.stopPropagation();
@@ -150,9 +162,9 @@
     }
     if (page === videoPage) {
       action('htWorkshopCctv', '播放校园体能赛', 71, 37, 23, 10,
-        function () { playVideo(campus, 'htWorkshopCctv'); });
+        function () { playVideo(campus, campusPlayer, 'htWorkshopCctv'); });
       action('htWorkshopDemo', '播放拉伸短片', 71, 58.5, 23, 9,
-        function () { playVideo(stretch, 'htWorkshopDemo'); });
+        function () { playVideo(stretch, stretchPlayer, 'htWorkshopDemo'); });
       action('htWorkshopOriginal', '新华社原站 ↗', 71, 69, 23, 7, stretch.original);
     }
   }
