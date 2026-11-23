@@ -102,7 +102,8 @@
     current = page;
     if (page === 178 || page === 181 || page === 182) {
       var cover = page === 178;
-      action('htWorkshopStart', '进入第6课课堂活动 →', cover ? 6 : 66, cover ? 84 : 86, cover ? 33 : 28, 6,
+      var top = cover ? 84 : (page === 181 ? 5 : 86);
+      action('htWorkshopStart', '进入第6课课堂活动 →', cover ? 6 : 66, top, cover ? 33 : 28, 6,
         function () { deck.go(first); });
     }
     if (page === first) {
