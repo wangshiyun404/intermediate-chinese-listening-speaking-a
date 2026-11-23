@@ -8,23 +8,30 @@
   var videoPage = 413;
   var first = 409;
   var current = 0;
-  var cctv = 'https://tv.cctv.com/2026/06/03/VIDEHfQ6n7YWaJF8vqcTl1Bp260603.shtml';
-  var xinhua = 'https://app.xinhuanet.com/news/article.html?articleId=2026080654ed2b3d075d44bfa378cf3abb838bd8';
-  var media = 'https://vodpub6.v.news.cn/yqfbzx-original/20260806/20260806be470c0b746046bc98733b218cde516c_XxjspcC000007_20260806_CBVFN0A001.mp4';
+  var campus = {
+    title: '北大校园体能竞速赛',
+    publisher: '央视网',
+    original: 'https://tv.cctv.com/2026/06/03/VIDEHfQ6n7YWaJF8vqcTl1Bp260603.shtml',
+    media: 'https://newcntv.qcloudcdn.com/asp/hls/main/0303000a/3/default/0ae8d71f0bc64342b696b9acfb9a38ba/main.m3u8?maxbr=2048',
+    hls: true
+  };
+  var stretch = {
+    title: '不跑不跳，简易拉伸',
+    publisher: '新华社',
+    original: 'https://app.xinhuanet.com/news/article.html?articleId=2026080654ed2b3d075d44bfa378cf3abb838bd8',
+    media: 'https://vodpub6.v.news.cn/yqfbzx-original/20260806/20260806be470c0b746046bc98733b218cde516c_XxjspcC000007_20260806_CBVFN0A001.mp4'
+  };
+  var activePlayback = null;
   var panel = document.createElement('section');
   panel.id = 'htWorkshopVideo';
   panel.hidden = true;
-  panel.setAttribute('aria-label', '新华社视频：简易拉伸');
   var player = document.createElement('video');
   player.controls = true;
   player.preload = 'none';
   player.setAttribute('playsinline', '');
-  player.setAttribute('aria-label', '不跑不跳，简易拉伸');
   var tools = document.createElement('div');
   tools.className = 'ht-workshop-player-tools';
   var fallback = document.createElement('a');
-  fallback.textContent = '打开新华社原站';
-  fallback.href = xinhua;
   fallback.target = '_blank';
   fallback.rel = 'noopener noreferrer';
   var close = document.createElement('button');
@@ -32,7 +39,6 @@
   close.textContent = '返回活动';
   var message = document.createElement('p');
   message.hidden = true;
-  message.textContent = '视频暂未加载，请点“打开新华社原站”或返回活动。';
   message.setAttribute('role','status');
   tools.appendChild(fallback);
   tools.appendChild(close);
@@ -42,28 +48,61 @@
   stage.appendChild(panel);
 
   function closeVideo(restoreFocus) {
-    if (panel.hidden) return;
+    if (!activePlayback) return;
+    var previous = activePlayback;
+    activePlayback = null;
     player.pause();
     panel.hidden = true;
+    if (previous.stream) previous.stream.destroy();
+    if (player.hasAttribute('src')) {
+      player.removeAttribute('src');
+      player.load();
+    }
     if (restoreFocus) {
-      var opener = document.getElementById('htWorkshopDemo');
+      var opener = document.getElementById(previous.buttonId);
       if (opener) opener.focus();
     }
   }
-  function playVideo() {
+  function playbackError(session) {
+    if (activePlayback !== session) return;
+    message.textContent = '视频暂时无法播放，可打开原站或返回活动重试。';
+    message.hidden = false;
+  }
+  function playVideo(clip, buttonId) {
+    closeVideo(false);
     if (window.HTInk && window.HTInk.isEnabled()) document.getElementById('htInkDone').click();
+    var session = { buttonId: buttonId, stream: null };
+    activePlayback = session;
     message.hidden = true;
+    panel.setAttribute('aria-label', clip.title);
+    player.setAttribute('aria-label', clip.title);
+    fallback.textContent = '打开' + clip.publisher + '原站';
+    fallback.href = clip.original;
     panel.hidden = false;
-    if (!player.getAttribute('src')) player.src = media;
-    var playback = player.play();
-    if (playback && playback.catch) playback.catch(function (error) {
-      if (!panel.hidden && error.name !== 'AbortError') message.hidden = false;
-    });
     close.focus();
     deck.wake();
+    if (!clip.hls || player.canPlayType('application/vnd.apple.mpegurl')) {
+      player.src = clip.media;
+    } else if (window.Hls && window.Hls.isSupported()) {
+      session.stream = new window.Hls();
+      session.stream.on(window.Hls.Events.ERROR, function (_, details) {
+        if (details.fatal) playbackError(session);
+      });
+      session.stream.loadSource(clip.media);
+      session.stream.attachMedia(player);
+    } else {
+      playbackError(session);
+      return;
+    }
+    var playback = player.play();
+    if (playback && playback.catch) playback.catch(function (error) {
+      if (error.name !== 'AbortError') playbackError(session);
+    });
   }
   close.onclick = function () { closeVideo(true); };
-  player.addEventListener('error', function () { message.hidden = false; });
+  player.addEventListener('error', function () {
+    if (activePlayback && player.error) playbackError(activePlayback);
+  });
   panel.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') { closeVideo(true); event.preventDefault(); }
     event.stopPropagation();
@@ -110,9 +149,11 @@
       action('htWorkshopGuide', '打开教师提示', 76, 5, 18, 7, '第6课教师提示.html');
     }
     if (page === videoPage) {
-      action('htWorkshopCctv', '打开央视原片 ↗', 71, 37, 23, 10, cctv);
-      action('htWorkshopDemo', '播放拉伸短片', 71, 58.5, 23, 9, playVideo);
-      action('htWorkshopOriginal', '新华社原站 ↗', 71, 69, 23, 7, xinhua);
+      action('htWorkshopCctv', '播放校园体能赛', 71, 37, 23, 10,
+        function () { playVideo(campus, 'htWorkshopCctv'); });
+      action('htWorkshopDemo', '播放拉伸短片', 71, 58.5, 23, 9,
+        function () { playVideo(stretch, 'htWorkshopDemo'); });
+      action('htWorkshopOriginal', '新华社原站 ↗', 71, 69, 23, 7, stretch.original);
     }
   }
 
