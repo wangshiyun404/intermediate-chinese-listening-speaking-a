@@ -183,6 +183,7 @@
     if (window.HTScene) window.HTScene.pageChanged(i);
     if (window.HTAnswers) window.HTAnswers.pageChanged(i);
     if (window.HTCharacters) window.HTCharacters.pageChanged(i);
+    if (window.HTWorkshop) window.HTWorkshop.pageChanged(i);
     return note;
   }
   function go(i) {

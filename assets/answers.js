@@ -107,7 +107,7 @@
     var slide=window.DECK&&window.DECK.slides[page-1];
     var lesson=slide&&window.DECK.lessons[slide.l];
     var lessonTitle=lesson?('第'+lesson.n+'课 · '+lesson.title):'课堂参考答案';
-    intro.appendChild(el('div','ht-answer-kicker',lessonTitle+' · 第 '+page+' 页'));
+    intro.appendChild(el('div','ht-answer-kicker',lessonTitle+' · 第 '+(deck.pageLabel?deck.pageLabel(page):page)+' 页'));
     intro.appendChild(el('h2','ht-answer-title',p.title||'本页参考答案'));
     if(p.subtitle)intro.appendChild(el('p','ht-answer-subtitle',p.subtitle));
     head.appendChild(intro);
